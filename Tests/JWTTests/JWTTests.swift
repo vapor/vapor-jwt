@@ -78,7 +78,7 @@ class JWTKitTests: XCTestCase {
 
         // middleware-based authentication
         // using req.auth.require
-        let secure = app.grouped(UserAuthenticator().middleware())
+        let secure = app.grouped(UserAuthenticator())
         secure.get("me") { req in
             try req.auth.require(TestUser.self)
         }
@@ -189,10 +189,8 @@ struct TestUser: Content, Authenticatable, JWTPayload {
 }
 
 struct UserAuthenticator: JWTAuthenticator {
-    typealias User = TestUser
-    typealias Payload = TestUser
-
-    func authenticate(jwt: TestUser, for request: Request) -> EventLoopFuture<TestUser?> {
-        return request.eventLoop.makeSucceededFuture(jwt)
+    func authenticate(jwt: TestUser, for request: Request) -> EventLoopFuture<Void> {
+        request.auth.login(jwt)
+        return request.eventLoop.makeSucceededFuture(())
     }
 }
